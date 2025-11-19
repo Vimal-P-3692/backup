@@ -1,0 +1,77 @@
+-------------------------------------------------------------------
+-- 🧑‍💼 ADMIN ACCOUNTS TABLE
+-------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS admin_accounts (
+    admin_id SERIAL PRIMARY KEY,                       -- Unique ID for each admin
+
+    full_name VARCHAR(100) NOT NULL,                   -- Admin’s full name
+    email VARCHAR(150) NOT NULL UNIQUE,                -- Email (used for login)
+    mobile_number VARCHAR(15) UNIQUE,                  -- Optional phone (must be unique)
+    password_hash TEXT NOT NULL,                       -- Hashed password for security
+
+    role VARCHAR(50) NOT NULL DEFAULT 'Admin' 
+        CHECK (role IN ('Admin')),                     -- Role limited to 'Admin'
+
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- Account creation time
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP   -- Last update time
+);
+
+-------------------------------------------------------------------
+-- 👷 WORKER ACCOUNTS TABLE
+-------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS worker_accounts (
+    worker_id SERIAL PRIMARY KEY,                       -- Unique ID for each worker
+
+    admin_id INT NOT NULL REFERENCES admin_accounts(admin_id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,                              -- Linked admin
+
+    full_name VARCHAR(100) NOT NULL,                    -- Worker's full name
+    mobile_number VARCHAR(15) NOT NULL UNIQUE,          -- Unique mobile number
+    joining_date DATE NOT NULL,                         -- Date the worker joined
+    gender VARCHAR(10) CHECK (gender IN ('Male', 'Female', 'Other')),  -- Gender selection
+    
+    user_name VARCHAR(100) NOT NULL UNIQUE,            -- Worker username
+    password_hash TEXT NOT NULL,                        -- Hashed password
+
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- Record creation timestamp
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP   -- Record update timestamp
+);
+
+-------------------------------------------------------------------
+-- 🧾 BOOKINGS TABLE
+-------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bookings (
+    booking_id SERIAL PRIMARY KEY,  -- Unique ID for each booking
+
+    -- 👥 Relationships
+    admin_id  INT NOT NULL REFERENCES admin_accounts(admin_id) ON DELETE CASCADE,
+    worker_id INT NOT NULL REFERENCES worker_accounts(worker_id) ON DELETE CASCADE,
+
+    -- 🧍 Guest Information
+    guest_name        VARCHAR(100) NOT NULL,
+    phone_number      VARCHAR(15)  NOT NULL,
+    number_of_persons INT NOT NULL CHECK (number_of_persons > 0),
+
+    -- 📅 Booking Details
+    booking_type  VARCHAR(50) NOT NULL,              -- Example: Sleeper, AC, etc.
+    total_hours   INT NOT NULL CHECK (total_hours > 0),
+    booking_date  DATE NOT NULL,
+    in_time       TIME NOT NULL,
+    out_time      TIME NOT NULL,
+
+    -- 🪪 Proof Details
+    proof_type    VARCHAR(50) NOT NULL,              -- Example: Aadhar, Passport
+    proof_id      VARCHAR(50) NOT NULL,              -- ID value
+
+    -- 💰 Pricing & Payment Information
+    price_per_person NUMERIC(10,2) NOT NULL CHECK (price_per_person >= 0),
+    total_amount     NUMERIC(12,2) NOT NULL CHECK (total_amount >= 0),
+    paid_amount      NUMERIC(12,2) DEFAULT 0 CHECK (paid_amount >= 0),
+    balance_amount   NUMERIC(12,2) DEFAULT 0 CHECK (balance_amount >= 0),
+    payment_method   VARCHAR(50) DEFAULT 'Cash',
+
+    -- 🕰️ Metadata
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
