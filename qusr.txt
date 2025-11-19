@@ -1,0 +1,11 @@
+1. Diamond pattern
+2. Hallow pattern 
+3. Right triangle pattern
+4. Sum of array elements 
+5. Reverse the array elements 
+6. Array Rotation 
+7. String palindrome 
+8. Anagram checking 
+9. Array Remove duplicate elements 
+10.   First non repeating character from a string
+
